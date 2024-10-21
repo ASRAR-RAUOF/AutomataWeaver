@@ -11,6 +11,34 @@ const path = require("path");
 const fs = require('fs');
 const { execSync } = require('child_process');
 const cors = require('cors');
+const app = express();
+const frontendUrl = process.env.FRONTEND_URL;
+
+app.use(cors({ 
+  origin: frontendUrl, 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Additional headers for CORS
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', frontendUrl);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
+// Middleware to parse JSON
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.set("view engine", 'ejs');
+app.set("views", path.join(__dirname, "views"));
 
 const automatonRoutes = require('./routes/automatonroutes.js');
 const userRoutes = require("./routes/userroutes.js");
@@ -18,17 +46,6 @@ const customStrategy = require('./strategy');
 const User = require('./models/User.js');
 
 
-const app = express();
-const frontendUrl = process.env.FRONTEND_URL;
-
-app.use(cors({ 
-  origin: frontendUrl, 
-  credentials: true 
-}));
-
-app.use(express.urlencoded({ extended: true }));
-app.set("view engine", 'ejs');
-app.set("views", path.join(__dirname, "views"));
 
 // Path to the .env file
 const envFilePath = path.join(__dirname, '.env');
@@ -143,8 +160,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Middleware to parse JSON
-app.use(express.json());
 
 // Routes
 app.use('/api', userRoutes);
