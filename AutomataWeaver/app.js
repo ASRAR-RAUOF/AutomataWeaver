@@ -168,7 +168,7 @@ app.use((err, req, res, next) => {
 });
 
 // Server listening
-const port = 3000;
+const port = process.env.PORT || 3000; // Use environment port or default to 3000
 app.listen(port, () => {
     console.log(`server is listening to port ${port}`);
 });

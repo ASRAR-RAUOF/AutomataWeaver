@@ -63,7 +63,7 @@ module.exports = {
                 // If no existing user, create a new user
                 user = new User({ email, googleId, username });
                 await user.save();
-                 res.json({ success: true, message: 'Welcome! You have successfully signed up with Google.' });
+                 
             }
     
             // Log the user in
