@@ -7,11 +7,13 @@ module.exports = {
             fn(req, res, next).catch((err) => next(err));
         };
     },
-    isLoggedIn: (req, res, next) => {
+    isLoggedIn:(req, res, next) => {
         if (!req.isAuthenticated()) {
             req.session.redirectUrl=req.originalUrl;
-            req.flash("error", "You must be logged in to save automaton");
-            return res.redirect("/login");
+            return res.status(401).json({
+                success: false,
+                message: "Already logged out"
+            });
         }
         next();
     },
