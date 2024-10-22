@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const passport=require("passport");
-const { saveRedirectUrl,isLoggedIn,isUser,asyncWrap} = require('../middleware');
+const { saveRedirectUrl,isLoggedIn,asyncWrap} = require('../middleware');
 const userController=require("../controllers/user");
 
 
@@ -66,9 +66,9 @@ router.post('/forgot-password', asyncWrap(userController.forgotPassword));
 router.get('/reset-password/:token', asyncWrap(userController.renderResetPasswordForm));
 router.post('/reset-password/:token', asyncWrap(userController.resetPassword));
 
-router.delete('/delete-account',isLoggedIn,isUser,asyncWrap(userController.deleteAccount));
-router.put('/update-password',  isLoggedIn,isUser,asyncWrap(userController.updatePassword));
-router.put('/update-username', isLoggedIn,isUser,asyncWrap(userController.updateUsername));
+router.delete('/delete-account',isLoggedIn,asyncWrap(userController.deleteAccount));
+router.put('/update-password',  isLoggedIn,asyncWrap(userController.updatePassword));
+router.put('/update-username', isLoggedIn,asyncWrap(userController.updateUsername));
 
 
 module.exports=router;

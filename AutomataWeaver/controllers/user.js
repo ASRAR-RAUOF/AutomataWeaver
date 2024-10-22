@@ -101,22 +101,33 @@ module.exports = {
           });
         }
       },
-
-    logout:(req, res, next) => {
+      logout:(req, res) => {
         req.logout((err) => {
             if (err) {
-                return next(err);
+                return res.status(500).json({ 
+                    success: false, 
+                    message: "Error during logout" 
+                });
             }
+            
             req.session.destroy((err) => {
                 if (err) {
                     console.error("Session destruction error", err);
+                    return res.status(500).json({ 
+                        success: false, 
+                        message: "Error destroying session" 
+                    });
                 }
+                
                 res.clearCookie('connect.sid');
-                res.json({ success: true, message: "You are logged out!" });
+                res.status(200).json({ 
+                    success: true, 
+                    message: "You are logged out!" 
+                });
             });
         });
     },
-
+    
     forgotPassword: async (req, res) => {
         const { email } = req.body;
         const user = await User.findOne({ email });
@@ -189,28 +200,62 @@ module.exports = {
             res.status(400).json({ success: false, message: 'Invalid or expired token. Please try again.' });
         }
     },
-    
-
-    deleteAccount: async (req, res, next) => {
+    deleteAccount: async (req, res) => {
         try {
             const userId = req.user._id;
-            await User.findOneAndDelete({ _id: userId });
+            
+            // Delete user
+            const deletedUser = await User.findByIdAndDelete(userId);
+            
+            if (!deletedUser) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found.'
+                });
+            }
+    
+            // Logout user and clean up session
             req.logout((err) => {
                 if (err) {
-                    return next(err);
+                    console.error("Logout error:", err);
+                    return res.status(500).json({
+                        success: false,
+                        message: 'Error during logout process.'
+                    });
                 }
+    
                 req.session.destroy((err) => {
                     if (err) {
-                        console.error("Session destruction error", err);
+                        console.error("Session destruction error:", err);
+                        return res.status(500).json({
+                            success: false,
+                            message: 'Error destroying session.'
+                        });
                     }
-                    res.clearCookie('connect.sid');
-                    res.json({ success: true, message: 'Your account has been successfully deleted.' });
+    
+                    res.clearCookie('connect.sid', {
+                        path: '/',
+                        httpOnly: true,
+                        secure: process.env.NODE_ENV === 'production',
+                        sameSite: 'lax'
+                    });
+    
+                    res.status(200).json({
+                        success: true,
+                        message: 'Your account has been successfully deleted.'
+                    });
                 });
             });
         } catch (error) {
-            res.status(500).json({ success: false, message: 'An error occurred while deleting your account.' });
+            console.error("Delete account error:", error);
+            res.status(500).json({
+                success: false,
+                message: 'An error occurred while deleting your account.'
+            });
         }
     },
+
+    
     
     updatePassword: async (req, res) => {
         try {
@@ -229,17 +274,56 @@ module.exports = {
         }
     },
     
-    updateUsername: async (req, res) => {
+    updateUsername :async (req, res) => {
         try {
-            const { newUsername } = req.body;
-            const user = await User.findById(req.user._id);
+            const { username } = req.body; // Match the frontend property name
             
-            user.username = newUsername;
-            await user.save();
-            
-            res.json({ success: true, message: 'Your username has been updated successfully.' });
+            if (!username || username.trim().length === 0) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Username cannot be empty'
+                });
+            }
+    
+            // Check if username already exists
+            const existingUser = await User.findOne({ 
+                username: username,
+                _id: { $ne: req.user._id } // Exclude current user from check
+            });
+    
+            if (existingUser) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Username already taken'
+                });
+            }
+    
+            // Update username
+            const updatedUser = await User.findByIdAndUpdate(
+                req.user._id,
+                { $set: { username: username } },
+                { new: true, runValidators: true }
+            );
+    
+            if (!updatedUser) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found'
+                });
+            }
+    
+            res.status(200).json({
+                success: true,
+                message: 'Username updated successfully',
+                username: updatedUser.username
+            });
+    
         } catch (error) {
-            res.status(400).json({ success: false, message: 'Failed to update username. Please try again.' });
+            console.error('Update username error:', error);
+            res.status(500).json({
+                success: false,
+                message: error.message || 'Failed to update username'
+            });
         }
     }
 };
