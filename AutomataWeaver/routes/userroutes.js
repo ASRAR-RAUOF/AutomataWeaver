@@ -10,8 +10,39 @@ router.route('/signup')
 .post(asyncWrap(userController.signup));
 
 //login
-router.route('/login')
- .post(saveRedirectUrl,passport.authenticate("local",{failureRedirect :`${process.env.FRONTEND_URL}`,failureFlash:true}),userController.login );
+ router.route('/login').post(
+  saveRedirectUrl,
+  (req, res, next) => {
+    passport.authenticate('local', (err, user, info) => {
+      if (err) {
+        return res.status(500).json({
+          success: false,
+          message: "Internal server error"
+        });
+      }
+      
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: info.message || "Invalid credentials"
+        });
+      }
+      
+      req.logIn(user, (err) => {
+        if (err) {
+          return res.status(500).json({
+            success: false,
+            message: "Login failed"
+          });
+        }
+        
+        // Proceed to login controller
+        next();
+      });
+    })(req, res, next);
+  },
+  userController.login
+);
 
  // Google Auth
 router.get('/auth/google',

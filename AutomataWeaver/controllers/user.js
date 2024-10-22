@@ -82,18 +82,25 @@ module.exports = {
     
     
    
-        login: async (req, res) => {
-            const frontendUrl = process.env.FRONTEND_URL;
-            let redirectUrl = res.locals.redirectUrl || `${frontendUrl}`;
-            res.json({ 
-                success: true, 
-                message: "Logged in successfully",
-                redirectUrl: redirectUrl
-            });
-       
-    },
 
-    
+    login:async (req, res) => {
+        try {
+          
+          const frontendUrl = process.env.FRONTEND_URL;
+          const redirectUrl = res.locals.redirectUrl || `${frontendUrl}`;
+          
+          res.status(200).json({
+            success: true,
+            message: "Logged in successfully",
+            redirectUrl: redirectUrl
+          });
+        } catch (error) {
+          res.status(401).json({
+            success: false,
+            message: error.message || "Login failed"
+          });
+        }
+      },
 
     logout:(req, res, next) => {
         req.logout((err) => {
