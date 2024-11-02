@@ -8,17 +8,19 @@ router.route('/')
   // Create a new automaton
   .post(isLoggedIn,asyncWrap(automataController.createAutomata))
   // Get all automatons
-  .get( isLoggedIn,isUser,asyncWrap(automataController.getallAutomatas))
+  .get(isLoggedIn, asyncWrap(automataController.getallAutomatas))
   //Delete all automatons
-  .delete(isLoggedIn,isUser, asyncWrap(automataController.deleteallAutomatas));
+  .delete(isLoggedIn,asyncWrap(automataController.deleteallAutomatas));
 
 router.route('/:id')
   // Get automaton by ID
-  .get(isLoggedIn,isUser, asyncWrap(automataController.getAutomatabyid))
+  .get(isLoggedIn,isUser, asyncWrap(automataController.getAutomataById))
   // Update an automaton
-  .put(isLoggedIn,isUser, asyncWrap(automataController.updateAutoamata))
+  .put(isLoggedIn,isUser, asyncWrap(automataController.updateAutomata))
   // Delete an automaton
-  .delete(isLoggedIn,isUser, asyncWrap(automataController.deleteAutomata));
+  .delete( isLoggedIn,isUser,asyncWrap(automataController.deleteAutomata));
+  //update name of file
+  router.put('/:id/name', isLoggedIn, isUser, asyncWrap(automataController.updateAutomatonName));
 
     
        

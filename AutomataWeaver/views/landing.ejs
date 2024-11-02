@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutomataWeaver API Documentation</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #212529;
+            --text-color: #e9ecef;
+            --bg-dark: #1a1d20;
+            --card-bg: #212529;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            background: var(--bg-dark);
+            color: var(--text-color);
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #212529 0%, #1a1d20 100%);
+            min-height: 100vh;
+        }
+        
+        .navbar-custom {
+            background: var(--card-bg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .api-card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            background: var(--card-bg);
+            margin-bottom: 2rem;
+            border: 1px solid #2d3238;
+        }
+        
+        .endpoint {
+            border-left: 4px solid var(--primary-color);
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--bg-dark);
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .method {
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .get { background: #1a2b3d; color: #4a90e2; }
+        .post { background: #1d2f1d; color: #4caf50; }
+        .put { background: #2f2a1d; color: #ff9800; }
+        .delete { background: #2f1d1d; color: #f44336; }
+        
+        code {
+            color: #4a90e2 !important;
+        }
+        
+        .nav-pills .nav-link {
+            color: var(--text-color);
+        }
+        
+        .nav-pills .nav-link.active {
+            background-color: var(--primary-color);
+        }
+        
+        .version-badge {
+            background: #1a2b3d;
+            color: #4a90e2;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body class="gradient-bg">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="bi bi-gear-fill me-2"></i>
+                AutomataWeaver API
+            </a>
+            <div class="d-flex">
+                <a href="https://syedhuzaif199.github.io/automata-weaver" class="btn btn-outline-primary me-2">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>
+                    Try Frontend
+                </a>
+                <a href="https://github.com/ASRAR-RAUOF/AutomataWeaver" class="btn btn-outline-light">
+                    <i class="bi bi-github me-1"></i>
+                    GitHub
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-5">
+        <!-- Header Card -->
+        <div class="api-card p-4 mb-5">
+            <div class="text-center mb-4">
+                <h1 class="display-4 mb-3">AutomataWeaver API</h1>
+                <span class="version-badge">Version 1.0.0</span>
+            </div>
+            <p class="lead text-center mb-4">
+                A comprehensive REST API powering AutomataWeaver - A web-based simulator for Finite Automata (NFA/DFA), Pushdown Automata (PDA), and Turing Machines
+            </p>
+            <div class="alert alert-dark">
+                <strong>About the Project:</strong> AutomataWeaver is a collaboration project developed by:
+                <ul class="mb-0">
+                    <li><strong>Asrar Rauof</strong> - Backend Developer (API)</li>
+                    <li><strong>Syed Mohammad Huzaif</strong> - Frontend Developer</li>
+                </ul>
+                Both developers are students at the University of Kashmir.
+            </div>
+            <div class="row justify-content-center text-center">
+                <div class="col-md-4">
+                    <div class="p-3">
+                        <i class="bi bi-gear-fill fs-1 text-primary mb-3"></i>
+                        <h5>Base URL</h5>
+                        <code class="bg-dark p-2 rounded">/api</code>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Documentation Content -->
+        <div class="row">
+            <!-- Sidebar Navigation -->
+            <div class="col-md-3 mb-4">
+                <div class="api-card p-3 sticky-top" style="top: 80px;">
+                    <nav class="nav flex-column nav-pills">
+                        <a class="nav-link active" href="#authentication">Authentication</a>
+                        <a class="nav-link" href="#user-management">User Management</a>
+                        <a class="nav-link" href="#automata-management">Automata Management</a>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <!-- Authentication Section -->
+                <section id="authentication" class="api-card p-4 mb-4">
+                    <h2 class="mb-4">Authentication</h2>
+                    
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <code>/api/login-status</code>
+                        <p class="mt-2 mb-0">Check current login status</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/api/signup</code>
+                        <p class="mt-2 mb-0">Register a new user</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/api/login</code>
+                        <p class="mt-2 mb-0">Login with credentials</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <code>/api/auth/google</code>
+                        <p class="mt-2 mb-0">Google OAuth authentication</p>
+                    </div>
+                </section>
+
+                <!-- User Management Section -->
+                <section id="user-management" class="api-card p-4 mb-4">
+                    <h2 class="mb-4">User Management</h2>
+                    
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <code>/api/logout</code>
+                        <p class="mt-2 mb-0">Logout current user</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/api/forgot-password</code>
+                        <p class="mt-2 mb-0">Request password reset</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method delete">DELETE</span>
+                        <code>/api/delete-account</code>
+                        <p class="mt-2 mb-0">Delete user account</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method put">PUT</span>
+                        <code>/api/update-password</code>
+                        <p class="mt-2 mb-0">Update user password</p>
+                    </div>
+                </section>
+
+                <!-- Automata Management Section -->
+                <section id="automata-management" class="api-card p-4">
+                    <h2 class="mb-4">Automata Management</h2>
+                    
+                    <div class="endpoint">
+                        <span class="method post">POST</span>
+                        <code>/api/automatons</code>
+                        <p class="mt-2 mb-0">Create new automaton</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <code>/api/automatons</code>
+                        <p class="mt-2 mb-0">Get all automatons</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method delete">DELETE</span>
+                        <code>/api/automatons</code>
+                        <p class="mt-2 mb-0">Delete all automatons</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method get">GET</span>
+                        <code>/api/automatons/:id</code>
+                        <p class="mt-2 mb-0">Get automaton by ID</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method put">PUT</span>
+                        <code>/api/automatons/:id</code>
+                        <p class="mt-2 mb-0">Update automaton</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method delete">DELETE</span>
+                        <code>/api/automatons/:id</code>
+                        <p class="mt-2 mb-0">Delete automaton</p>
+                    </div>
+
+                    <div class="endpoint">
+                        <span class="method put">PUT</span>
+                        <code>/api/automatons/:id/name</code>
+                        <p class="mt-2 mb-0">Update automaton name</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="text-center mt-5">
+            <p>AutomataWeaver - Open Source Project</p>
+            
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Smooth scrolling for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Active nav item tracking
+        window.addEventListener('scroll', function() {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.nav-link');
+            
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                if (scrollY >= sectionTop - 100) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').substring(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

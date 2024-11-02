@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flash Message Demo</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .alert a {
+            font-weight: bold;
+            text-decoration: underline;
+        }
+        .demo-button {
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <!-- Demo button to simulate the flash message -->
+                <div class="text-center demo-button">
+                    <button onclick="showFlashMessage()" class="btn btn-primary">
+                    AutomataWeaver Password Change
+                    </button>
+                </div>
+
+                <!-- Flash message container -->
+                <div id="flashContainer"></div>
+            </div>
+        </div>
+    </div>
+   
+
+    <script>
+        function showFlashMessage() {
+            const redirectUrl = '/dashboard'; // Example redirect URL
+            const message = `
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    Your password has been changed successfully. <a href="${redirectUrl}">Click here</a> to proceed.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+            
+            document.getElementById('flashContainer').innerHTML = message;
+
+            // Simulate redirect when clicking the link
+            const link = document.querySelector('.alert a');
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                alert('In a real application, this would redirect to: ' + redirectUrl);
+            });
+        }
+
+        // Auto-show the flash message when page loads
+        window.onload = function() {
+            showFlashMessage();
+        };
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

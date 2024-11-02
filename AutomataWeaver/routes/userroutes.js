@@ -4,13 +4,18 @@ const passport=require("passport");
 const { saveRedirectUrl,isLoggedIn,asyncWrap} = require('../middleware');
 const userController=require("../controllers/user");
 
-
+//route for login status
+router.get('/login-status', isLoggedIn, (req, res) => {
+  res.json({ isLoggedIn: true });
+});
 //signup
 router.route('/signup')
 .post(asyncWrap(userController.signup));
 
+
+
 //login
- router.route('/login').post(
+router.route('/login').post(
   saveRedirectUrl,
   (req, res, next) => {
     passport.authenticate('local', (err, user, info) => {
@@ -66,7 +71,8 @@ router.post('/forgot-password', asyncWrap(userController.forgotPassword));
 router.get('/reset-password/:token', asyncWrap(userController.renderResetPasswordForm));
 router.post('/reset-password/:token', asyncWrap(userController.resetPassword));
 
-router.delete('/delete-account',isLoggedIn,asyncWrap(userController.deleteAccount));
+//router.delete('/delete-account',isLoggedIn,asyncWrap(userController.deleteAccount));
+router.delete('/delete-account', isLoggedIn, asyncWrap( userController.deleteAccount));
 router.put('/update-password',  isLoggedIn,asyncWrap(userController.updatePassword));
 router.put('/update-username', isLoggedIn,asyncWrap(userController.updateUsername));
 

@@ -13,15 +13,18 @@ const { execSync } = require('child_process');
 const cors = require('cors');
 const app = express();
 const frontendUrl = process.env.FRONTEND_URL;
+const customStrategy = require('./strategy');
+const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
 
+app.set('trust proxy', 1);
 app.use(cors({ 
   origin: frontendUrl, 
-  credentials: true,
+  credentials: true, 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-// Additional headers for CORS
+//Additional headers for CORS
 app.use((req, res, next) => {
   res.header('Access-Control-Allow-Origin', frontendUrl);
   res.header('Access-Control-Allow-Credentials', 'true');
@@ -42,7 +45,6 @@ app.set("views", path.join(__dirname, "views"));
 
 const automatonRoutes = require('./routes/automatonroutes.js');
 const userRoutes = require("./routes/userroutes.js");
-const customStrategy = require('./strategy');
 const User = require('./models/User.js');
 
 
@@ -67,9 +69,10 @@ if (!fs.existsSync(envFilePath) || !process.env.JWT_SECRET || !process.env.SECRE
     reloadEnv();
 }
 // MongoDB connection
+const mongoUrl ="mongodb://127.0.0.1:27017/AutomataWeaver";
 const db_url=process.env.ATLASDB_URL;
 async function main() {
-    await mongoose.connect(db_url);
+    await mongoose.connect(mongoUrl);
     console.log("connected to DB");
 }
 main().catch(err => console.log(err));
@@ -87,7 +90,7 @@ const store = MongoStore.create({
   {
      console.log("ERROR IN MONGO SESSION STORE",err);
   });
-
+  
 // Session options
 const sessionOptions = {
     store:store,
@@ -152,7 +155,7 @@ passport.deserializeUser((id, done) => {
     .catch(err => done(err, null));
 });
 
-// Add flash messages and user to local variables
+ //add user to local variables
 app.use((req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
@@ -167,9 +170,21 @@ app.use('/api/automatons', automatonRoutes);
 
 // Test root route
 app.get("/", (req, res) => {
-    res.send("Welcome to the AutomataWeaver  backend API");
+    res.render('landing');
+});
+app.get("/redirect",(req,res)=>
+{
+  res.render('redirect');
 });
 
+// Add a health check endpoint before your error handler
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ 
+      status: 'ok', 
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV
+  });
+});
 
 
 // Error-handling middleware 
@@ -182,8 +197,36 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Server listening
-const port = process.env.PORT || 3000; // Use environment port or default to 3000
+const keepServerActive = () => {
+  const url = process.env.RENDER_EXTERNAL_URL;
+  
+  setInterval(async () => {
+      try {
+          const response = await fetch(`${url}/api/health`);
+          if (response.ok) {
+              console.log(`Keep-alive ping successful at ${new Date().toISOString()}`);
+          } else {
+              throw new Error(`Health check failed with status: ${response.status}`);
+          }
+      } catch (error) {
+          console.error('Keep-alive ping failed:', error);
+      }
+  }, 13 * 60 * 1000); // 13 minutes
+};
+
+
+const port = process.env.PORT || 8080;
 app.listen(port, () => {
     console.log(`server is listening to port ${port}`);
+    
+    // Only start the keep-alive in production
+    if (process.env.NODE_ENV === 'production') {
+        keepServerActive();
+        console.log('Keep-alive mechanism activated');
+    }
 });
+
+
+
+
+

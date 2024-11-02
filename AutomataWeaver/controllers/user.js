@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 
 module.exports = {
     
+    
     signup: async (req, res, next) => {
         try {
             let { username, email, password } = req.body;
@@ -82,10 +83,9 @@ module.exports = {
     
     
    
-
     login:async (req, res) => {
         try {
-          
+          // If we reach here, authentication was successful
           const frontendUrl = process.env.FRONTEND_URL;
           const redirectUrl = res.locals.redirectUrl || `${frontendUrl}`;
           
@@ -101,38 +101,49 @@ module.exports = {
           });
         }
       },
-      logout:(req, res) => {
-        req.logout((err) => {
+
+    
+
+   
+logout:(req, res) => {
+    req.logout((err) => {
+        if (err) {
+            return res.status(500).json({ 
+                success: false, 
+                message: "Error during logout" 
+            });
+        }
+        
+        req.session.destroy((err) => {
             if (err) {
+                console.error("Session destruction error", err);
                 return res.status(500).json({ 
                     success: false, 
-                    message: "Error during logout" 
+                    message: "Error destroying session" 
                 });
             }
             
-            req.session.destroy((err) => {
-                if (err) {
-                    console.error("Session destruction error", err);
-                    return res.status(500).json({ 
-                        success: false, 
-                        message: "Error destroying session" 
-                    });
-                }
-                
-                res.clearCookie('connect.sid');
-                res.status(200).json({ 
-                    success: true, 
-                    message: "You are logged out!" 
-                });
+            res.clearCookie('connect.sid');
+            res.status(200).json({ 
+                success: true, 
+                message: "You are logged out!" 
             });
         });
-    },
-    
+    });
+},
+
     forgotPassword: async (req, res) => {
         const { email } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
             return res.status(404).json({ success: false, message: 'No account with that email address exists.' });
+        }
+        // Check if user is authenticated through Google
+        if (user.googleId ) {
+            return res.status(400).json({
+                success: false,
+                message: 'This account uses Google Sign-In. Please reset your password through Google.'
+            });
         }
 
         const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '15m' });
@@ -143,6 +154,11 @@ module.exports = {
             auth: {
                 user: process.env.EMAIL_ADDRESS,
                 pass: process.env.EMAIL_PASSWORD
+            },
+            tls: {
+                rejectUnauthorized: true,  // Only use during development
+                timeout: 30000, // 30 seconds timeout
+                socketTimeout: 30000
             }
         });
 
@@ -152,8 +168,9 @@ module.exports = {
             subject: 'AutomataWeaver Password Reset',
             text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n
                    Please click on the following link, or paste this into your browser to complete the process:\n\n
-                   http://${req.headers.host}/api/reset-password/${token}\n\n
-                   If you did not request this, please ignore this email and your password will remain unchanged.\n`
+                   http://${req.headers.host}/api/reset-password/${token}\n
+                   If you did not request this, please ignore this email and your password will remain unchanged.\n
+                   This link will expire in 15 minutes`
         };
 
         await transporter.sendMail(mailOptions);
@@ -170,93 +187,120 @@ module.exports = {
                 return res.redirect(`${process.env.FRONTEND_URL}?error=User not found`);
             }
     
-            // Redirect to frontend with token
+            
             res.render('reset-password', { token: req.params.token });
-            // res.redirect(`${process.env.FRONTEND_URL}/reset-password?token=${req.params.token}`);
+            
         } catch (error) {
             res.redirect(`${process.env.FRONTEND_URL}?error=Invalid or expired token`);
         }
     },
 
+    
     resetPassword: async (req, res) => {
         try {
             const decoded = jwt.verify(req.params.token, process.env.JWT_SECRET);
             const user = await User.findById(decoded.userId);
-
+             
             if (!user) {
                 return res.status(404).json({ success: false, message: 'User not found.' });
             }
-
+             
             await user.setPassword(req.body.password);
             await user.save();
-
+             
             req.login(user, (err) => {
                 if (err) {
                     return res.status(500).json({ success: false, message: 'An error occurred while logging in.' });
                 }
-                res.json({ success: true, message: 'Your password has been changed successfully.' });
+                 
+                const redirectUrl = `${process.env.FRONTEND_URL}/automata-weaver`;
+                
+                req.flash('success', `Your password has been changed successfully. <a href="${redirectUrl}">Click here</a> to proceed.`);
+                res.redirect('/redirect');
+                
+
+                
             });
         } catch (error) {
             res.status(400).json({ success: false, message: 'Invalid or expired token. Please try again.' });
         }
     },
-    deleteAccount: async (req, res) => {
+
+    deleteAccount: async (req, res, next) => {
         try {
             const userId = req.user._id;
-            
-            // Delete user
-            const deletedUser = await User.findByIdAndDelete(userId);
-            
-            if (!deletedUser) {
-                return res.status(404).json({
-                    success: false,
-                    message: 'User not found.'
-                });
-            }
-    
-            // Logout user and clean up session
+            await User.findOneAndDelete({ _id: userId });
             req.logout((err) => {
                 if (err) {
-                    console.error("Logout error:", err);
-                    return res.status(500).json({
-                        success: false,
-                        message: 'Error during logout process.'
-                    });
+                    return next(err);
                 }
-    
                 req.session.destroy((err) => {
                     if (err) {
-                        console.error("Session destruction error:", err);
-                        return res.status(500).json({
-                            success: false,
-                            message: 'Error destroying session.'
-                        });
+                        console.error("Session destruction error", err);
                     }
-    
-                    res.clearCookie('connect.sid', {
-                        path: '/',
-                        httpOnly: true,
-                        secure: process.env.NODE_ENV === 'production',
-                        sameSite: 'lax'
-                    });
-    
-                    res.status(200).json({
-                        success: true,
-                        message: 'Your account has been successfully deleted.'
-                    });
+                    res.clearCookie('connect.sid');
+                    res.json({ success: true, message: 'Your account has been successfully deleted.' });
                 });
             });
         } catch (error) {
-            console.error("Delete account error:", error);
-            res.status(500).json({
-                success: false,
-                message: 'An error occurred while deleting your account.'
-            });
+            res.status(500).json({ success: false, message: 'An error occurred while deleting your account.' });
         }
     },
+    // deleteAccount: async (req, res) => {
+    //     try {
+    //         const userId = req.user._id;
+            
+    //         // Delete user
+    //         const deletedUser = await User.findByIdAndDelete(userId);
+            
+    //         if (!deletedUser) {
+    //             return res.status(404).json({
+    //                 success: false,
+    //                 message: 'User not found.'
+    //             });
+    //         }
+    
+    //         // Logout user and clean up session
+    //         req.logout((err) => {
+    //             if (err) {
+    //                 console.error("Logout error:", err);
+    //                 return res.status(500).json({
+    //                     success: false,
+    //                     message: 'Error during logout process.'
+    //                 });
+    //             }
+    
+    //             req.session.destroy((err) => {
+    //                 if (err) {
+    //                     console.error("Session destruction error:", err);
+    //                     return res.status(500).json({
+    //                         success: false,
+    //                         message: 'Error destroying session.'
+    //                     });
+    //                 }
+    
+    //                 res.clearCookie('connect.sid', {
+    //                     path: '/',
+    //                     httpOnly: true,
+    //                     secure: process.env.NODE_ENV === 'production',
+    //                     sameSite: 'lax'
+    //                 });
+    
+    //                 res.status(200).json({
+    //                     success: true,
+    //                     message: 'Your account has been successfully deleted.'
+    //                 });
+    //             });
+    //         });
+    //     } catch (error) {
+    //         console.error("Delete account error:", error);
+    //         res.status(500).json({
+    //             success: false,
+    //             message: 'An error occurred while deleting your account.'
+    //         });
+    //     }
+    // },
 
-    
-    
     updatePassword: async (req, res) => {
         try {
             const { currentPassword, newPassword } = req.body;
@@ -274,6 +318,7 @@ module.exports = {
         }
     },
     
+   
     updateUsername :async (req, res) => {
         try {
             const { username } = req.body; // Match the frontend property name
