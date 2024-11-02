@@ -43,7 +43,7 @@ app.use(express.urlencoded({ extended: true }));
 app.set("view engine", 'ejs');
 app.set("views", path.join(__dirname, "views"));
 
-const automatonRoutes = require('./routes/automatonroutes.js');
+const automataRoutes = require('./routes/automataroutes.js');
 const userRoutes = require("./routes/userroutes.js");
 const User = require('./models/User.js');
 
@@ -166,7 +166,7 @@ app.use((req, res, next) => {
 
 // Routes
 app.use('/api', userRoutes);
-app.use('/api/automatons', automatonRoutes);
+app.use('/api/automata', automataRoutes);
 
 // Test root route
 app.get("/", (req, res) => {
