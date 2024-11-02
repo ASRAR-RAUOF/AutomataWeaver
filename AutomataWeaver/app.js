@@ -72,7 +72,7 @@ if (!fs.existsSync(envFilePath) || !process.env.JWT_SECRET || !process.env.SECRE
 const mongoUrl ="mongodb://127.0.0.1:27017/AutomataWeaver";
 const db_url=process.env.ATLASDB_URL;
 async function main() {
-    await mongoose.connect(mongoUrl);
+    await mongoose.connect(db_url);
     console.log("connected to DB");
 }
 main().catch(err => console.log(err));
