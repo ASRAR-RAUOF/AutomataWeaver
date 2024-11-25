@@ -221,7 +221,7 @@ app.listen(port, () => {
     
     // Only start the keep-alive in production
     if (process.env.NODE_ENV === 'production') {
-        keepServerActive();
+        //keepServerActive();
         console.log('Keep-alive mechanism activated');
     }
 });
