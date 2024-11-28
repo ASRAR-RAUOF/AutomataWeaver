@@ -18,7 +18,9 @@ const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch
 
 app.set('trust proxy', 1);
 app.use(cors({ 
-  origin: frontendUrl, 
+  origin: (origin, callback) => {
+    callback(null, true); // Dynamically allow all origins
+  },
   credentials: true, 
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
